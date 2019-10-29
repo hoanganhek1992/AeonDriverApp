@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">DriverApp</string>
+
+    <string name="login_title">Login</string>
+    <string name="login_des">Please enter bus number and pass</string>
+    <string name="login_hint_bus_number">Your bus number</string>
+    <string name="login_hint_bus_pass">Password</string>
+    <string name="login_button_continue">Continue</string>
+    <string name="login_valid_notification">Please enter username and pass</string>
+    <string name="login_get_driver_fail">Username is wrong, please check and re-try.</string>
+    <string name="login_wrong_password">Your password is wrong, please check and re-try.</string>
+    <string name="login_cant_get_data">Can not load data, please try again.</string>
+
+    <string name="home_title">Home Activity</string>
+    <string name="loading">Loading…</string>
+
+
+</resources>

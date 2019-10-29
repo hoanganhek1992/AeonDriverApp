@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#66aa7d</color>
+    <color name="colorPrimaryDark">#59946d</color>
+    <color name="colorAccent">#2f80eb</color>
+
+    <color name="color_white">#fff</color>
+    <color name="color_white90">#FCFCFC</color>
+    <color name="color_white80">#FAFAFA</color>
+    <color name="color_white70">#F8F8F8</color>
+    <color name="color_white60">#F5F5F5</color>
+    <color name="color_white50">#F1F1F1</color>
+    <color name="color_white40">#E9E9E9</color>
+    <color name="color_white30">#E6E6E6</color>
+    <color name="color_white20">#E2E2E2</color>
+    <color name="color_white10">#DFDFDF</color>
+
+    <color name="color_white_blur">#99FFFFFF</color>
+    <color name="color_white_blur2">#DDFFFFFF</color>
+    <color name="color_white_blur3">#96ffffff</color>
+    <color name="color_primary_dark_press">#4b9737</color>
+    <color name="color_transparent">#00FFFFFF</color>
+    <color name="color_gray">#b3b3b3</color>
+    <color name="color_gray_text">#999</color>
+    <color name="color_gray_text_dark">#666</color>
+    <color name="color_gray_text_dark2">#333</color>
+    <color name="color_gray_blur">#2fb3b3b3</color>
+    <color name="color_gray_line">#94b3b3b3</color>
+    <color name="color_gray_background">#e7e7ea</color>
+
+    <color name="color_text_dark">#141F17</color>
+    <color name="color_text_dark_2">#E6141F17</color>
+
+    <color name="color_blue">#0000ff</color>
+    <color name="color_blue_title_dark">#029fef</color>
+    <color name="color_blue_title">#0ba8f9</color>
+    <color name="color_blue_background">#0dbafe</color>
+    <color name="color_primary_blur">#1470dc55</color>
+    <color name="color_primary_blur_100">#6470dc55</color>
+    <color name="color_blur">#142f80eb</color>
+    <color name="color_blur_50">#322f80eb</color>
+    <color name="color_blur_100">#640000ff</color>
+
+    <color name="color_green_dialog_success_title">#3ea69b</color>
+    <color name="color_green_dialog_success_button">#a5dfd9</color>
+    <color name="color_green_dialog_fail_title">#d15241</color>
+    <color name="color_green_dialog_fail_button">#f99385</color>
+
+    <!--New color-->
+    <color name="color_green_button_new">#66aa7d</color>
+    <color name="color_green_button_new_press">#59946d</color>
+    <color name="color_start_dark">#0069bf</color>
+    <color name="color_red_text">#efdc0000</color>
+    <color name="color_red_background_button">#d7422e</color>
+
+    <color name="color_orange_Dialog_attention_title">#f57900</color>
+    <color name="color_orange_Dialog_attention_button">#f69436</color>
+    <!--Design colors-->
+    <color name="red_dark">#F06423</color>
+    <color name="red_dark2">#D85A1B</color>
+    <color name="cyan_light">#c9ebee</color>
+    <color name="cyan">#b5e3e7</color>
+    <color name="cyan_dark">#70BDC6</color>
+    <color name="navy_blue">#214258</color>
+    <color name="navy_blue_dark">#1C3A4E</color>
+    <color name="light_green">#78DC96</color>
+    <color name="light_blue">#55C8F0</color>
+    <color name="blue_black_dark">#13171d</color>
+    <color name="blue_black_light">#516179</color>
+    <color name="blue_grey_light">#A5B4C8</color>
+    <color name="orange">#FFA500</color>
+    <color name="yellow">#fff44f</color>
+
+</resources>

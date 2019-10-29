@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <import type="android.view.View" />
+
+        <variable
+            name="viewModel"
+            type="com.aeonvn.driverapp.ui.login.LoginViewModel" />
+    </data>
+
+    <RelativeLayout xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/bg_design">
+
+        <TextView
+            android:id="@+id/login_appname"
+            style="@style/Style_AppNameSingle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/margin_default_50"
+            android:text="@string/app_name"
+            android:textColor="@color/color_white80"
+            android:textStyle="bold" />
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/login_appname"
+            android:layout_marginStart="@dimen/margin_default_24"
+            android:layout_marginTop="@dimen/margin_default_24"
+            android:layout_marginEnd="@dimen/margin_default_24"
+            android:background="@color/color_white80"
+            app:cardBackgroundColor="@color/color_white80"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="2dp"
+            app:contentPadding="@dimen/margin_default_24">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+
+                <TextView
+                    style="@style/Style_Title_Master_Dark"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/login_title" />
+
+                <TextView
+                    style="@style/Style_Des_Dark"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/login_des" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginTop="@dimen/margin_default_24"
+                    android:layout_marginBottom="@dimen/margin_default_24"
+                    android:orientation="vertical">
+
+                    <LinearLayout style="@style/Login_InputBox">
+
+                        <EditText
+                            android:id="@+id/login_driver_username"
+                            style="@style/Login_InputEditText"
+                            android:hint="@string/login_hint_bus_number"
+                            android:inputType="number"
+                            android:maxLength="13"
+                            android:text="@={viewModel.username}"
+                            tools:ignore="Autofill">
+
+                        </EditText>
+
+                    </LinearLayout>
+
+                    <LinearLayout style="@style/Login_InputBox">
+
+                        <EditText
+                            android:id="@+id/login_driver_pass"
+                            style="@style/Login_InputEditText"
+                            android:hint="@string/login_hint_bus_pass"
+                            android:inputType="numberPassword"
+                            android:maxLength="13"
+                            android:text="@={viewModel.password}"
+                            tools:ignore="Autofill">
+
+                        </EditText>
+
+                    </LinearLayout>
+
+                    <Button
+                        style="@style/Login_ButtonCustom"
+                        android:onClick="@{()-> viewModel.onContinueClick()}"
+                        android:text="@string/login_button_continue" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
+        <include
+            android:id="@+id/llProgressBar"
+            layout="@layout/custom_progress"
+            android:visibility="@{viewModel.loading ? View.VISIBLE : View.INVISIBLE}" />
+
+    </RelativeLayout>
+</layout>
