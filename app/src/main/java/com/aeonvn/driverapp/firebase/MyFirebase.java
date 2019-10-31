@@ -5,7 +5,6 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 
 import com.aeonvn.driverapp.model.Driver;
-import com.aeonvn.driverapp.model.DriverLocation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -32,14 +31,6 @@ public class MyFirebase {
     }
 
     private MyFirebase(FirebaseFirestore mDatabase) {
-        this.mDatabase = mDatabase;
-    }
-
-    public FirebaseFirestore getmDatabase() {
-        return mDatabase;
-    }
-
-    public void setmDatabase(FirebaseFirestore mDatabase) {
         this.mDatabase = mDatabase;
     }
 
@@ -73,13 +64,13 @@ public class MyFirebase {
         });
     }
 
-    public void addNewDriver(Driver driver) {
+    /*public void addNewDriver(Driver driver) {
         mDatabase.collection(DRIVER_TABLE).document("123456").set(driver).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
             }
         });
-    }
+    }*/
 
     public interface UpdateLocationCallback {
 

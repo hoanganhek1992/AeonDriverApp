@@ -1,15 +1,12 @@
 package com.aeonvn.driverapp.ui.home;
 
 import android.Manifest;
-import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.IntentSender;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
-import android.location.Location;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
@@ -22,7 +19,6 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.databinding.DataBindingUtil;
 import androidx.lifecycle.ViewModelProviders;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.aeonvn.driverapp.R;
 import com.aeonvn.driverapp.databinding.ActivityHomeBinding;
@@ -44,12 +40,10 @@ public class HomeActivity extends AppCompatActivity {
     private final String TAG = "HomeActivity";
     private static final int REQUEST_PERMISSIONS_REQUEST_CODE = 34;
     private static final int REQUEST_CHECK_SETTINGS = 0x1;
-    private HomeViewModel homeViewModel;
-    SettingsClient mSettingsClient;
-    LocationSettingsRequest mLocationSettingsRequest;
-    LocationRequest mLocationRequest;
+    private SettingsClient mSettingsClient;
+    private LocationSettingsRequest mLocationSettingsRequest;
+    private LocationRequest mLocationRequest;
 
-    private MyReceiver myReceiver;
     private LocationUpdatesService mService = null;
     private boolean mBound = false;
 
@@ -84,9 +78,8 @@ public class HomeActivity extends AppCompatActivity {
         mSettingsClient = LocationServices.getSettingsClient(this);
 
         ActivityHomeBinding activityHomeBinding = DataBindingUtil.setContentView(this, R.layout.activity_home);
-        homeViewModel = ViewModelProviders.of(this).get(HomeViewModel.class);
+        HomeViewModel homeViewModel = ViewModelProviders.of(this).get(HomeViewModel.class);
         activityHomeBinding.setViewModel(homeViewModel);
-        myReceiver = new MyReceiver();
     }
 
     @Override
@@ -99,19 +92,6 @@ public class HomeActivity extends AppCompatActivity {
             checkPermissions();
         }
         startLocationUpdates();
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        LocalBroadcastManager.getInstance(this).registerReceiver(myReceiver,
-                new IntentFilter(LocationUpdatesService.ACTION_BROADCAST));
-    }
-
-    @Override
-    protected void onPause() {
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(myReceiver);
-        super.onPause();
     }
 
     @Override
@@ -170,9 +150,6 @@ public class HomeActivity extends AppCompatActivity {
                                            @NonNull int[] grantResults) {
         Log.e(TAG, "onRequestPermissionResult");
         if (requestCode == REQUEST_PERMISSIONS_REQUEST_CODE) {
-            /*if (grantResults.length <= 0) {
-                checkPermissions();
-            }*/
             checkPermissions();
         }
     }
@@ -194,11 +171,6 @@ public class HomeActivity extends AppCompatActivity {
                     @Override
                     public void onSuccess(LocationSettingsResponse locationSettingsResponse) {
                         Log.e(TAG, "addOnSuccessListener onSuccess");
-
-                        //noinspection MissingPermission
-                       /* mFusedLocationClient.requestLocationUpdates(mLocationRequest,
-                                mLocationCallback, Looper.myLooper());
-*/
                     }
                 })
                 .addOnFailureListener(this, new OnFailureListener() {
@@ -209,8 +181,6 @@ public class HomeActivity extends AppCompatActivity {
                             case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
                                 Log.e(TAG, "addOnFailureListener onFailure");
                                 try {
-                                    // Show the dialog by calling startResolutionForResult(), and check the
-                                    // result in onActivityResult().
                                     ResolvableApiException rae = (ResolvableApiException) e;
                                     rae.startResolutionForResult(HomeActivity.this, REQUEST_CHECK_SETTINGS);
                                 } catch (IntentSender.SendIntentException sie) {
@@ -240,25 +210,6 @@ public class HomeActivity extends AppCompatActivity {
         mLocationRequest = new LocationRequest();
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
     }
-
-    private class MyReceiver extends BroadcastReceiver {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            Location location = intent.getParcelableExtra(LocationUpdatesService.EXTRA_LOCATION);
-            if (location != null) {
-                //Toast.makeText(getApplicationContext(), "onLocationUpdate from services: " + location.getLatitude() + " " + location.getLongitude(), Toast.LENGTH_SHORT).show();
-                homeViewModel.onLocationUpdate(location);
-            }
-        }
-    }
-
-
-
-
-
-
-
-
 
 
 

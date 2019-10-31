@@ -1,19 +1,3 @@
-/**
- * Copyright 2017 Google Inc. All Rights Reserved.
- * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.aeonvn.driverapp.services;
 
 import android.app.ActivityManager;
@@ -35,7 +19,6 @@ import android.os.Looper;
 import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.aeonvn.driverapp.MyApplication;
 import com.aeonvn.driverapp.R;
@@ -51,12 +34,9 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 public class LocationUpdatesService extends Service {
 
-    private static final String PACKAGE_NAME = "com.aeonvn.driverapp";
     private static final String TAG = LocationUpdatesService.class.getSimpleName();
     private static final String CHANNEL_ID = "follow_location_01";
-    public static final String ACTION_BROADCAST = PACKAGE_NAME + ".broadcast";
-    public static final String EXTRA_LOCATION = PACKAGE_NAME + ".location";
-    private static final String EXTRA_STARTED_FROM_NOTIFICATION = PACKAGE_NAME +
+    private static final String EXTRA_STARTED_FROM_NOTIFICATION = TAG +
             ".started_from_notification";
     private final IBinder mBinder = new LocalBinder();
 
@@ -72,7 +52,8 @@ public class LocationUpdatesService extends Service {
     private FusedLocationProviderClient mFusedLocationClient;
     private LocationCallback mLocationCallback;
     private Handler mServiceHandler;
-    private Location mCurrentLocation, mOldLocation;
+    protected Location mCurrentLocation;
+    private Location mOldLocation;
 
     private MyFirebase myFirebase;
     private MyApplication myApplication;
@@ -196,7 +177,7 @@ public class LocationUpdatesService extends Service {
         PendingIntent activityPendingIntent = PendingIntent.getActivity(this, 0,
                 new Intent(this, HomeActivity.class), 0);
 
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this)
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .addAction(R.drawable.ic_launcher_background, getString(R.string.location_updating),
                         activityPendingIntent)
                 .setContentText(text)
@@ -218,10 +199,8 @@ public class LocationUpdatesService extends Service {
     private void onNewLocation(Location location) {
         Log.i(TAG, "New location: " + location);
         mCurrentLocation = location;
-        Intent intent = new Intent(ACTION_BROADCAST);
-        intent.putExtra(EXTRA_LOCATION, location);
-        LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
         onLocationUpdate(mCurrentLocation);
+
         //Update information to Notification when runing in Forceground
         if (serviceIsRunningInForeground(this)) {
             mNotificationManager.notify(NOTIFICATION_ID, getNotification());
@@ -277,7 +256,6 @@ public class LocationUpdatesService extends Service {
     }
 
     private boolean isLocationValid(Location location, Location location2) {
-        //return location.distanceTo(location2) > 100;
-        return true;
+        return location.distanceTo(location2) > 1;
     }
 }
