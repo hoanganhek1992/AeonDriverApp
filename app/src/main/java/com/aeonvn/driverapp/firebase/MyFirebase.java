@@ -5,6 +5,7 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 
 import com.aeonvn.driverapp.model.Driver;
+import com.aeonvn.driverapp.model.DriverLocation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -36,6 +37,15 @@ public class MyFirebase {
 
     public void updateDriverLocation(Driver driver, final UpdateLocationCallback callback) {
         mDatabase.collection(LOCATION_TABLE).document(driver.getUsername()).set(driver.getLicenseplates()).addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                callback.onUpdateLocationSuccess();
+            }
+        });
+    }
+
+    public void updateDemoLocation(DriverLocation location, final UpdateLocationCallback callback) {
+        mDatabase.collection(LOCATION_TABLE).document("123456").set(location).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
                 callback.onUpdateLocationSuccess();

@@ -1,45 +1,14 @@
+/*
 package com.aeonvn.driverapp.ui;
 
-import android.Manifest;
-import android.app.Activity;
-import android.content.Intent;
-import android.content.IntentSender;
-import android.content.pm.PackageManager;
-import android.location.Location;
-import android.os.Bundle;
-import android.os.Looper;
-import android.util.Log;
-import android.view.View;
-import android.widget.TextView;
-import android.widget.Toast;
-
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-
-import com.aeonvn.driverapp.R;
-import com.google.android.gms.common.api.ApiException;
-import com.google.android.gms.common.api.ResolvableApiException;
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationCallback;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationResult;
-import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.location.LocationSettingsRequest;
-import com.google.android.gms.location.LocationSettingsResponse;
-import com.google.android.gms.location.LocationSettingsStatusCodes;
-import com.google.android.gms.location.SettingsClient;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.material.snackbar.Snackbar;
-
-import java.text.DateFormat;
-import java.util.Date;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final String TAG = MainActivity.class.getSimpleName();
+    */
+/*private final String TAG = "HomeActivity";
+
+    private HomeViewModel homeViewModel;
 
     private static final int REQUEST_PERMISSIONS_REQUEST_CODE = 34;
     private static final int REQUEST_CHECK_SETTINGS = 0x1;
@@ -48,36 +17,40 @@ public class MainActivity extends AppCompatActivity {
             UPDATE_INTERVAL_IN_MILLISECONDS / 2;
 
     private FusedLocationProviderClient mFusedLocationClient;
-
     private SettingsClient mSettingsClient;
-
     private LocationRequest mLocationRequest;
-
     private LocationSettingsRequest mLocationSettingsRequest;
-
     private LocationCallback mLocationCallback;
-
     private Location mCurrentLocation;
 
-    // UI Widgets.
-    private TextView mLatitudeTextView;
 
-    private String mDataString;
+    // A reference to the service used to get location updates.
+    private LocationUpdatesService mService = null;
+
+    // Tracks the bound state of the service.
+    private boolean mBound = false;
+
+    public static Intent getInstance(Context context) {
+        return new Intent(context, HomeActivity.class);
+    }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        Log.e(TAG, "onCreate");
-        // Locate the UI widgets.
-        mLatitudeTextView = findViewById(R.id.location_history_data);
-        mDataString = "";
+        ActivityHomeBinding activityHomeBinding = DataBindingUtil.setContentView(this, R.layout.activity_home);
+        homeViewModel = ViewModelProviders.of(this).get(HomeViewModel.class);
+        activityHomeBinding.setViewModel(homeViewModel);
+
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         mSettingsClient = LocationServices.getSettingsClient(this);
         createLocationCallback();
         createLocationRequest();
         buildLocationSettingsRequest();
+
+        //Service auto start when kill application
+        //startService(new Intent(this, StickyService.class));
     }
+
 
     private void createLocationRequest() {
         Log.e(TAG, "createLocationRequest");
@@ -94,9 +67,7 @@ public class MainActivity extends AppCompatActivity {
             public void onLocationResult(LocationResult locationResult) {
                 Log.e(TAG, "onLocationResult");
                 super.onLocationResult(locationResult);
-
                 mCurrentLocation = locationResult.getLastLocation();
-                mDataString += DateFormat.getTimeInstance().format(new Date()) + " ";
                 updateUI();
             }
         };
@@ -128,7 +99,6 @@ public class MainActivity extends AppCompatActivity {
     private void startLocationUpdates() {
         Log.e(TAG, "startLocationUpdates");
 
-        // Begin by checking if the device has the necessary location settings.
         mSettingsClient.checkLocationSettings(mLocationSettingsRequest)
                 .addOnSuccessListener(this, new OnSuccessListener<LocationSettingsResponse>() {
                     @Override
@@ -148,12 +118,11 @@ public class MainActivity extends AppCompatActivity {
                         switch (statusCode) {
                             case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
                                 Log.e(TAG, "addOnFailureListener onFailure");
-
                                 try {
                                     // Show the dialog by calling startResolutionForResult(), and check the
                                     // result in onActivityResult().
                                     ResolvableApiException rae = (ResolvableApiException) e;
-                                    rae.startResolutionForResult(MainActivity.this, REQUEST_CHECK_SETTINGS);
+                                    rae.startResolutionForResult(HomeActivity.this, REQUEST_CHECK_SETTINGS);
                                 } catch (IntentSender.SendIntentException sie) {
                                     Log.i(TAG, "PendingIntent unable to execute request.");
                                 }
@@ -162,7 +131,7 @@ public class MainActivity extends AppCompatActivity {
                                 String errorMessage = "Location settings are inadequate, and cannot be " +
                                         "fixed here. Fix in Settings.";
                                 Log.e(TAG, errorMessage);
-                                Toast.makeText(MainActivity.this, errorMessage, Toast.LENGTH_LONG).show();
+                                Toast.makeText(getApplicationContext(), errorMessage, Toast.LENGTH_LONG).show();
                         }
 
                     }
@@ -171,8 +140,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void updateUI() {
         if (mCurrentLocation != null) {
-            mDataString += "Location: " + mCurrentLocation.getLatitude() + " " + mCurrentLocation.getLongitude() + "\n";
-            mLatitudeTextView.setText(mDataString);
+            homeViewModel.onLocationUpdate(mCurrentLocation);
         }
     }
 
@@ -215,7 +183,7 @@ public class MainActivity extends AppCompatActivity {
                         @Override
                         public void onClick(View view) {
                             // Request permission
-                            ActivityCompat.requestPermissions(MainActivity.this,
+                            ActivityCompat.requestPermissions(HomeActivity.this,
                                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                                     REQUEST_PERMISSIONS_REQUEST_CODE);
                         }
@@ -223,7 +191,7 @@ public class MainActivity extends AppCompatActivity {
         } else {
             Log.e(TAG, "Requesting permission");
 
-            ActivityCompat.requestPermissions(MainActivity.this,
+            ActivityCompat.requestPermissions(HomeActivity.this,
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                     REQUEST_PERMISSIONS_REQUEST_CODE);
         }
@@ -238,5 +206,36 @@ public class MainActivity extends AppCompatActivity {
                 checkPermissions();
             }
         }
+    }*//*
+
+
+
+    */
+/*public void checkLocationPermission() {
+        Log.e(TAG, "checkLocationPermission");
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            requestLocationPermission();
+        } else {
+            Toast.makeText(getApplicationContext(), "Dong y", Toast.LENGTH_LONG).show();
+            //Test();
+        }
     }
-}
+
+
+    private void requestLocationPermission() {
+        Log.e(TAG, "requestLocationPermission");
+        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        Log.e(TAG, "onRequestPermissionsResult - " + requestCode);
+        Toast.makeText(getApplicationContext(), "Người dùng chọn cấp quyền: " + requestCode, Toast.LENGTH_SHORT).show();
+        if (requestCode == 1) {
+            checkLocationPermission();
+        }
+    }*//*
+
+}*/

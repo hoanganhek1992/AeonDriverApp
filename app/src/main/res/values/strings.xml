@@ -23,5 +23,8 @@
     <string name="ok">OK</string>
     <string name="request_location_updates">Update location</string>
 
+    <string name="demo_button_start">Send emulator location</string>
+    <string name="demo_button_stop">Stop</string>
+
 
 </resources>

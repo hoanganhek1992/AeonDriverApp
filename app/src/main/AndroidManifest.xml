@@ -16,36 +16,42 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="AllowBackup,GoogleAppIndexingWarning">
-        <activity android:name=".ui.MainActivity" />
-        <activity
-            android:name=".ui.login.LoginActivity"
-            android:theme="@style/HideTitleTheme">
+        <activity android:name=".ui.demo.DemoActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".ui.home.HomeActivity" />
+        <activity
+            android:name=".ui.login.LoginActivity"
+            android:theme="@style/HideTitleTheme">
 
-        <!-- Foreground services in Q+ require type. -->
+        </activity>
+        <activity android:name=".ui.home.HomeActivity" /> <!-- Foreground services in Q+ require type. -->
         <service
             android:name=".services.LocationUpdatesService"
             android:enabled="true"
             android:exported="true"
             android:foregroundServiceType="location"
+            tools:ignore="ExportedService"
             tools:targetApi="q" />
+        <service
+            android:name=".services.DemoLocationUpdatesService"
+            android:enabled="true"
+            android:exported="true"
+            android:foregroundServiceType="location"
+            tools:ignore="ExportedService"
+            tools:targetApi="q" />
+        <service android:name=".services.StickyService" />
 
-        <service android:name=".services.StickyService" >
-        </service>
-
-        <receiver android:name=".broadcast.RestartServiceReceiver" >
+        <receiver
+            android:name=".broadcast.RestartServiceReceiver"
+            tools:ignore="ExportedReceiver">
             <intent-filter>
-                <action android:name="YouWillNeverKillMe" >
-                </action>
+                <action android:name="YouWillNeverKillMe" />
             </intent-filter>
         </receiver>
-
     </application>
 
 </manifest>

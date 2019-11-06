@@ -9,69 +9,51 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
-import android.location.Location;
 import android.os.Binder;
 import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
-import android.os.Looper;
 import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
 
-import com.aeonvn.driverapp.MyApplication;
 import com.aeonvn.driverapp.R;
 import com.aeonvn.driverapp.firebase.MyFirebase;
 import com.aeonvn.driverapp.model.DriverLocation;
-import com.aeonvn.driverapp.ui.home.HomeActivity;
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationCallback;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationResult;
-import com.google.android.gms.location.LocationServices;
+import com.aeonvn.driverapp.ui.demo.DemoActivity;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-public class LocationUpdatesService extends Service {
+import java.util.ArrayList;
+import java.util.List;
 
-    private static final String TAG = LocationUpdatesService.class.getSimpleName();
-    private static final String CHANNEL_ID = "follow_location_01";
+public class DemoLocationUpdatesService extends Service {
+
+    private static final String TAG = DemoLocationUpdatesService.class.getSimpleName();
+    private static final String CHANNEL_ID = "demo_location";
     private static final String EXTRA_STARTED_FROM_NOTIFICATION = TAG +
             ".started_from_notification";
     private final IBinder mBinder = new LocalBinder();
 
     private NotificationManager mNotificationManager;
-    private static final int NOTIFICATION_ID = 12345678;
+    private static final int NOTIFICATION_ID = 456;
     private boolean mChangingConfiguration = false;
 
-    private static final long UPDATE_INTERVAL_IN_MILLISECONDS = 2000;
-    private static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS =
-            UPDATE_INTERVAL_IN_MILLISECONDS / 2;
+    private static final long UPDATE_INTERVAL_IN_MILLISECONDS = 6000;
 
-    private LocationRequest mLocationRequest;
-    private FusedLocationProviderClient mFusedLocationClient;
-    private LocationCallback mLocationCallback;
     private Handler mServiceHandler;
-    protected Location mCurrentLocation;
-    private Location mOldLocation;
 
     private MyFirebase myFirebase;
-    private MyApplication myApplication;
+    List<DriverLocation> mList;
+    private boolean isIncrease = true;
+    private int position = 0;
 
-    public LocationUpdatesService() {
+    public DemoLocationUpdatesService() {
     }
 
     @Override
     public void onCreate() {
-        mLocationCallback = new LocationCallback() {
-            @Override
-            public void onLocationResult(LocationResult locationResult) {
-                super.onLocationResult(locationResult);
-                onNewLocation(locationResult.getLastLocation());
-            }
-        };
-        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-        createLocationRequest();
+
         HandlerThread handlerThread = new HandlerThread(TAG);
         handlerThread.start();
         mServiceHandler = new Handler(handlerThread.getLooper());
@@ -87,8 +69,9 @@ public class LocationUpdatesService extends Service {
             // Set the Notification Channel for the Notification Manager.
             mNotificationManager.createNotificationChannel(mChannel);
         }
+        mList = new ArrayList<>();
+        addListLocation();
         myFirebase = MyFirebase.getInstance(FirebaseFirestore.getInstance());
-        myApplication = MyApplication.getInstance();
     }
 
     @Override
@@ -97,7 +80,6 @@ public class LocationUpdatesService extends Service {
         boolean startedFromNotification = intent.getBooleanExtra(EXTRA_STARTED_FROM_NOTIFICATION,
                 false);
         if (startedFromNotification) {
-            removeLocationUpdates();
             stopSelf();
         }
         return START_NOT_STICKY;
@@ -137,56 +119,32 @@ public class LocationUpdatesService extends Service {
 
     @Override
     public void onDestroy() {
+        Log.e(TAG, "onDestroy services");
         mServiceHandler.removeCallbacksAndMessages(null);
+        sendDataHandler.removeCallbacks(sendDataRunnable);
+
     }
 
-    public void requestLocationUpdates() {
-        Log.i(TAG, "Requesting location updates");
-
-        Utils.setRequestingLocationUpdates(this, true);
-        startService(new Intent(getApplicationContext(), LocationUpdatesService.class));
-        try {
-            mFusedLocationClient.requestLocationUpdates(mLocationRequest,
-                    mLocationCallback, Looper.myLooper());
-        } catch (SecurityException unlikely) {
-            Utils.setRequestingLocationUpdates(this, false);
-            Log.e(TAG, "Lost location permission. Could not request updates. " + unlikely);
-        }
-    }
-
-    public void removeLocationUpdates() {
-        Log.i(TAG, "Removing location updates");
-        try {
-            mFusedLocationClient.removeLocationUpdates(mLocationCallback);
-            Utils.setRequestingLocationUpdates(this, false);
-            stopSelf();
-        } catch (SecurityException unlikely) {
-            Utils.setRequestingLocationUpdates(this, true);
-            Log.e(TAG, "Lost location permission. Could not remove updates. " + unlikely);
-        }
-    }
 
     private Notification getNotification() {
-        Intent intent = new Intent(this, LocationUpdatesService.class);
-        CharSequence text = Utils.getLocationText(mCurrentLocation);
-
+        Intent intent = new Intent(this, DemoLocationUpdatesService.class);
         // Extra to help us figure out if we arrived in onStartCommand via the notification or not.
         intent.putExtra(EXTRA_STARTED_FROM_NOTIFICATION, true);
 
         // The PendingIntent to launch activity.
         PendingIntent activityPendingIntent = PendingIntent.getActivity(this, 0,
-                new Intent(this, HomeActivity.class), 0);
+                new Intent(this, DemoActivity.class), 0);
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .addAction(R.drawable.ic_launcher_background, getString(R.string.location_updating),
                         activityPendingIntent)
-                .setContentText(text)
+                .setContentText("Demo Location")
                 .setContentTitle(Utils.getLocationTitle(this))
                 .setContentIntent(activityPendingIntent)
                 .setOngoing(true)
                 .setPriority(Notification.PRIORITY_HIGH)
                 .setSmallIcon(R.mipmap.ic_launcher)
-                .setTicker(text)
+                .setTicker("Demo Location")
                 .setWhen(System.currentTimeMillis());
 
         // Set the Channel ID for Android O.
@@ -197,30 +155,9 @@ public class LocationUpdatesService extends Service {
         return builder.build();
     }
 
-    private void onNewLocation(Location location) {
-        Log.i(TAG, "New location: " + location);
-        mCurrentLocation = location;
-        onLocationUpdate(mCurrentLocation);
-
-        //Update information to Notification when runing in Forceground
-        if (serviceIsRunningInForeground(this)) {
-            mNotificationManager.notify(NOTIFICATION_ID, getNotification());
-        }
-    }
-
-    /**
-     * Sets the location request parameters.
-     */
-    private void createLocationRequest() {
-        mLocationRequest = new LocationRequest();
-        mLocationRequest.setInterval(UPDATE_INTERVAL_IN_MILLISECONDS);
-        mLocationRequest.setFastestInterval(FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS);
-        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-    }
-
     public class LocalBinder extends Binder {
-        public LocationUpdatesService getService() {
-            return LocationUpdatesService.this;
+        public DemoLocationUpdatesService getService() {
+            return DemoLocationUpdatesService.this;
         }
     }
 
@@ -239,24 +176,83 @@ public class LocationUpdatesService extends Service {
         return false;
     }
 
-    void onLocationUpdate(Location location) {
-        Log.e(TAG, "onLocationUpdate: " + location.getLatitude() + " " + location.getLongitude());
-        if (mOldLocation != null && isLocationValid(mOldLocation, location) && myApplication.getmDriver() != null) {
-            myApplication.getmDriver().setLicenseplates(new DriverLocation(String.valueOf(location.getLatitude()), String.valueOf(location.getLongitude())));
-            myFirebase.updateDriverLocation(myApplication.getmDriver(), new MyFirebase.UpdateLocationCallback() {
-                @Override
-                public void onUpdateLocationSuccess() {
-                    Log.e(TAG, "onUpdateLocationSuccess: ");
-                }
-            });
-            mOldLocation = location;
-        }
-        if (mOldLocation == null) {
-            mOldLocation = location;
+    public void onSendLocation() {
+        sendDataHandler.post(sendDataRunnable);
+
+        if (serviceIsRunningInForeground(this)) {
+            mNotificationManager.notify(NOTIFICATION_ID, getNotification());
         }
     }
 
-    private boolean isLocationValid(Location location, Location location2) {
-        return location.distanceTo(location2) > 1;
+
+    public void onStopSendLocation() {
+        sendDataHandler.removeCallbacks(sendDataRunnable);
+
+        if (serviceIsRunningInForeground(this)) {
+            mNotificationManager.notify(NOTIFICATION_ID, getNotification());
+        }
     }
+
+    private void addListLocation() {
+        mList.clear();
+        mList.add(new DriverLocation("10.786150", "106.665983"));
+        mList.add(new DriverLocation("10.786869", "106.664590"));
+        mList.add(new DriverLocation("10.785815", "106.663624"));
+        mList.add(new DriverLocation("10.785056", "106.662927"));
+        mList.add(new DriverLocation("10.784076", "106.662036"));
+        mList.add(new DriverLocation("10.782507", "106.660502"));
+        mList.add(new DriverLocation("10.780621", "106.658717"));
+        mList.add(new DriverLocation("10.779361", "106.657549"));
+        mList.add(new DriverLocation("10.777997", "106.656180"));
+        mList.add(new DriverLocation("10.778520", "106.655873"));
+        mList.add(new DriverLocation("10.780080", "106.655422"));
+        mList.add(new DriverLocation("10.781746", "106.654980"));
+        mList.add(new DriverLocation("10.782934", "106.654610"));
+        mList.add(new DriverLocation("10.784538", "106.654159"));
+        mList.add(new DriverLocation("10.787507", "106.653284"));
+        mList.add(new DriverLocation("10.789138", "106.652806"));
+        mList.add(new DriverLocation("10.790210", "106.652427"));
+        mList.add(new DriverLocation("10.791663", "106.652770"));
+        mList.add(new DriverLocation("10.792886", "106.653365"));
+        mList.add(new DriverLocation("10.794100", "106.654448"));
+        mList.add(new DriverLocation("10.795395", "106.655697"));
+        mList.add(new DriverLocation("10.796529", "106.654646"));
+        mList.add(new DriverLocation("10.796073", "106.654182"));
+        mList.add(new DriverLocation("10.795666", "106.653756"));
+    }
+
+    private Handler sendDataHandler = new Handler();
+    private Runnable sendDataRunnable = new Runnable() {
+        @Override
+        public void run() {
+            Log.e(TAG, "Update new location (demo):"
+                    + mList.get(position).getLatitude()
+                    + " " + mList.get(position).getLongitude());
+            myFirebase.updateDemoLocation(mList.get(position), new MyFirebase.UpdateLocationCallback() {
+                @Override
+                public void onUpdateLocationSuccess() {
+                    Log.e(TAG, "onUpdateLocationSuccess");
+                }
+            });
+            if (isIncrease) {
+                // location di chuyển tới
+                Log.e(TAG, "Di chuyển chiều đi");
+                position++;
+                if (position >= mList.size()) {
+                    isIncrease = false;
+                    position = (mList.size() - 1);
+                }
+            } else {
+                // location di chuyền lùi
+                Log.e(TAG, "Di chuyển chiều về");
+                position--;
+                if (position < 0) {
+                    isIncrease = true;
+                    position = 0;
+                }
+            }
+
+            sendDataHandler.postDelayed(sendDataRunnable, UPDATE_INTERVAL_IN_MILLISECONDS);
+        }
+    };
 }
